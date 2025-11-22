@@ -1,47 +1,51 @@
 pipeline {
-    agent any                  // Exécute sur n'importe quel agent Jenkins
+    agent any
 
-    tools {
-        maven 'Maven-3.9'      // Nom du Maven configuré dans "Manage Jenkins > Tools"
-        jdk   'JDK-17'         // Nom du JDK configuré
+    environment {
+        // Token GitHub enregistré dans Jenkins Credentials
+        GIT_CREDENTIALS = 'github-token'
     }
 
     stages {
-        stage('Récupérer le code') {
+        stage('Checkout') {
             steps {
-                echo 'Checkout du code...'
-                checkout scm
+                echo 'Clonage du dépôt GitHub...'
+                git branch: 'main',
+                    url: 'https://github.com/eyakhadhraoui/DevopsTest.git'
             }
         }
 
-        stage('Compilation') {
+        stage('Build') {
             steps {
+                echo 'Compilation du projet Maven...'
                 sh 'mvn clean compile'
             }
         }
 
-        stage('Tests') {
+        stage('Test') {
             steps {
+                echo 'Exécution des tests unitaires...'
                 sh 'mvn test'
             }
         }
 
         stage('Package') {
             steps {
+                echo 'Packaging de l’application...'
                 sh 'mvn package'
             }
         }
     }
 
     post {
-        always {
-            echo 'Fin du pipeline'
-        }
         success {
-            echo 'Build réussi !'
+            echo 'Build terminé avec succès !'
         }
         failure {
-            echo 'Échec du build'
+            echo 'Le build a échoué !'
+        }
+        always {
+            echo 'Fin du pipeline.'
         }
     }
 }
